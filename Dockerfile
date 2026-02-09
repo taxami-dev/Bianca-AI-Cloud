@@ -1,18 +1,24 @@
-FROM runpod/pytorch:2.1-py3.11-cuda11.8.0-devel-ubuntu22.04
+FROM python:3.11-slim
 
 WORKDIR /app
 
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy application code
 COPY . .
 
-RUN mkdir -p logs data/cache agents/models
+# Create necessary directories
+RUN mkdir -p logs data
 
+# Set environment
 ENV PYTHONPATH=/app
-
-RUN apt-get update && apt-get install -y curl wget git && rm -rf /var/lib/apt/lists/*
-
-EXPOSE 8000
+ENV PYTHONUNBUFFERED=1
 
 CMD ["python", "main.py"]
